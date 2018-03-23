@@ -1,0 +1,517 @@
+ ~  cd Documents 
+ ~/Documents/Uni/DPhil/UflShape  
+ ~/Documents/Uni/DPhil/UflShape  ls
+femorph  __pycache__  scratch2.py  scratch.py  shape_derivative.py
+ ~/Documents/Uni/DPhil/UflShape  source ~/bin/firedrake/bin/activate
+(firedrake)  ~/Documents/Uni/DPhil/UflShape  ipython -i
+Python 3.6.3 (default, Oct  3 2017, 21:45:48) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 6.2.1 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: run scratch2.py
+w_4
+
+In [2]: print(J)
+{ w_2 } * dx(<Mesh #1>[everywhere], {})
+
+In [3]: from ufl.algorithms.compute_form_data import *
+
+In [4]: after = apply_algebra_lowering(J)
+
+In [5]: after
+Out[5]: Form([Integral(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, FiniteElement('Lagrange', triangle, 1), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 2), 'cell', Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1), 'everywhere', {}, None)])
+
+In [6]: after = apply_derivatives(J)
+
+In [7]: after = apply_derivatives(after)
+
+In [8]: after
+Out[8]: Form([Integral(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, FiniteElement('Lagrange', triangle, 1), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 2), 'cell', Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1), 'everywhere', {}, None)])
+
+In [9]: after = apply_function_pullbacks(after)
+
+In [10]: after
+Out[10]: Form([Integral(ReferenceValue(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, FiniteElement('Lagrange', triangle, 1), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 2)), 'cell', Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1), 'everywhere', {}, None)])
+
+In [11]: print(after)
+{ reference_value(w_2) } * dx(<Mesh #1>[everywhere], {})
+
+In [12]: after = apply_integral_scaling(after)
+
+In [13]: print(after)
+{ weight * |detJ| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [14]: 
+
+In [14]: x = SpatialCoordinate(mesh)
+
+In [15]: z = derivative(after, x)
+ERROR:root:Internal Python error in the inspect module.
+Below is the traceback from this internal error.
+
+Traceback (most recent call last):
+  File "/home/wechsung/bin/firedrake/lib/python3.6/site-packages/IPython/core/interactiveshell.py", line 2910, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "<ipython-input-15-f3df769a3151>", line 1, in <module>
+    z = derivative(after, x)
+  File "/home/wechsung/bin/firedrake/src/firedrake/firedrake/ufl_expr.py", line 141, in derivative
+    if len(u.split()) > 1 and set(extract_coefficients(form)) & set(u.split()):
+AttributeError: 'SpatialCoordinate' object has no attribute 'split'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/wechsung/bin/firedrake/lib/python3.6/site-packages/IPython/core/interactiveshell.py", line 1828, in showtraceback
+    stb = value._render_traceback_()
+AttributeError: 'AttributeError' object has no attribute '_render_traceback_'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/wechsung/bin/firedrake/lib/python3.6/site-packages/IPython/core/ultratb.py", line 1090, in get_records
+    return _fixed_getinnerframes(etb, number_of_lines_of_context, tb_offset)
+  File "/home/wechsung/bin/firedrake/lib/python3.6/site-packages/IPython/core/ultratb.py", line 311, in wrapped
+    return f(*args, **kwargs)
+  File "/home/wechsung/bin/firedrake/lib/python3.6/site-packages/IPython/core/ultratb.py", line 345, in _fixed_getinnerframes
+    records = fix_frame_records_filenames(inspect.getinnerframes(etb, context))
+  File "/usr/lib/python3.6/inspect.py", line 1480, in getinnerframes
+    frameinfo = (tb.tb_frame,) + getframeinfo(tb, context)
+  File "/usr/lib/python3.6/inspect.py", line 1438, in getframeinfo
+    filename = getsourcefile(frame) or getfile(frame)
+  File "/usr/lib/python3.6/inspect.py", line 693, in getsourcefile
+    if getattr(getmodule(object, filename), '__loader__', None) is not None:
+  File "/usr/lib/python3.6/inspect.py", line 739, in getmodule
+    os.path.realpath(f)] = module.__name__
+AttributeError: module has no attribute '__name__'
+---------------------------------------------------------------------------
+
+In [16]: z = derivative(after, mesh.coordinates)
+
+In [17]: print(Z)
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-17-fb5bcf912ef3> in <module>()
+----> 1 print(Z)
+
+NameError: name 'Z' is not defined
+
+In [18]: print(z)
+{ d/dfj { weight * |detJ| * (reference_value(w_2)) }, with fh=ExprList(*(w_4,)), dfh/dfj = ExprList(*(v_0,)), and coefficient derivatives ExprMapping(*()) } * dx(<Mesh #1>[everywhere], {})
+
+In [19]: after = apply_derivatives(z)
+UFL:ERROR Currently no support for ReferenceValue in CoefficientDerivative.
+ERROR:UFL:Currently no support for ReferenceValue in CoefficientDerivative.
+---------------------------------------------------------------------------
+UFLException                              Traceback (most recent call last)
+<ipython-input-19-a7536ca459c6> in <module>()
+----> 1 after = apply_derivatives(z)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in apply_derivatives(expression)
+   1072 def apply_derivatives(expression):
+   1073     rules = DerivativeRuleDispatcher()
+-> 1074     return map_integrand_dags(rules, expression)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrand_dags(function, form, only_integral_type, compress)
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+     57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+---> 58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <listcomp>(.0)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     44         itg = form
+     45         if (only_integral_type is None) or (itg.integral_type() in only_integral_type):
+---> 46             return itg.reconstruct(function(itg.integrand()))
+     47         else:
+     48             return itg
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <lambda>(expr)
+     55 
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+---> 57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+     58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+---> 86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+     87 
+     88             # Optionally check if r is in rcache, a memory optimization
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in coefficient_derivative(self, o, f, dummy_w, dummy_v, dummy_cd)
+   1038         dummy, w, v, cd = o.ufl_operands
+   1039         rules = GateauxDerivativeRuleset(w, v, cd)
+-> 1040         return map_expr_dag(rules, f)
+   1041 
+   1042     def indexed(self, o, Ap, ii):  # TODO: (Partially) duplicated in generic rules
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     82             # Cache miss: Get transformed operands, then apply transformation
+     83             if cutoff_types[v._ufl_typecode_]:
+---> 84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+     86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in reference_value(self, o)
+    838 
+    839     def reference_value(self, o):
+--> 840         error("Currently no support for ReferenceValue in CoefficientDerivative.")
+    841         # TODO: This is implementable for regular derivative(M(f),f,v)
+    842         #       but too messy if customized coefficient derivative
+
+~/bin/firedrake/src/ufl/ufl/log.py in error(self, *message)
+    170         "Write error message and raise an exception."
+    171         self._log.error(*message)
+--> 172         raise self._exception_type(self._format_raw(*message))
+    173 
+    174     def begin(self, *message):
+
+UFLException: Currently no support for ReferenceValue in CoefficientDerivative.
+
+In [20]: foo = apply_derivatives(derivative(JacobianDeterminant(mesh), mesh.coordinates))
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-20-16916035f2d7> in <module>()
+----> 1 foo = apply_derivatives(derivative(JacobianDeterminant(mesh), mesh.coordinates))
+
+~/bin/firedrake/src/firedrake/firedrake/ufl_expr.py in derivative(form, u, du, coefficient_derivatives)
+    145         if isinstance(u, firedrake.Function):
+    146             V = u.function_space()
+--> 147             args = form.arguments()
+    148             number = max(a.number() for a in args) if args else -1
+    149             du = Argument(V, number + 1)
+
+AttributeError: 'JacobianDeterminant' object has no attribute 'arguments'
+
+In [21]: foo = apply_derivatives(derivative(JacobianDeterminant(mesh)*dx, mesh.coordinates))
+
+In [22]: print(foo)
+<empty Form>
+
+In [23]: foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh)))
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-23-7c1b4fe32b73> in <module>()
+----> 1 foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh)))
+
+NameError: name 'ufl' is not defined
+
+In [24]: import ufl
+
+In [25]: foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh)))
+UFL:ERROR Can only create arguments automatically for non-indexed coefficients.
+ERROR:UFL:Can only create arguments automatically for non-indexed coefficients.
+---------------------------------------------------------------------------
+UFLException                              Traceback (most recent call last)
+<ipython-input-25-7c1b4fe32b73> in <module>()
+----> 1 foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh)))
+
+~/bin/firedrake/src/ufl/ufl/formoperators.py in derivative(form, coefficient, argument, coefficient_derivatives)
+    277 
+    278     coefficients, arguments = _handle_derivative_arguments(form, coefficient,
+--> 279                                                            argument)
+    280 
+    281     if coefficient_derivatives is None:
+
+~/bin/firedrake/src/ufl/ufl/formoperators.py in _handle_derivative_arguments(form, coefficient, argument)
+    170         # Try to create argument if not provided
+    171         if not all(isinstance(c, Coefficient) for c in coefficients):
+--> 172             error("Can only create arguments automatically for non-indexed coefficients.")
+    173 
+    174         # Get existing arguments from form and position the new one
+
+~/bin/firedrake/src/ufl/ufl/log.py in error(self, *message)
+    170         "Write error message and raise an exception."
+    171         self._log.error(*message)
+--> 172         raise self._exception_type(self._format_raw(*message))
+    173 
+    174     def begin(self, *message):
+
+UFLException: Can only create arguments automatically for non-indexed coefficients.
+
+In [26]: foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh), TestFunction(mesh.coordinates.function_space())))
+UFL:ERROR Invalid coefficient type for <SpatialCoordinate id=140659505241448>
+ERROR:UFL:Invalid coefficient type for <SpatialCoordinate id=140659505241448>
+---------------------------------------------------------------------------
+UFLException                              Traceback (most recent call last)
+<ipython-input-26-59ab3b5fca36> in <module>()
+----> 1 foo = apply_derivatives(ufl.derivative(JacobianDeterminant(mesh)*dx, SpatialCoordinate(mesh), TestFunction(mesh.coordinates.function_space())))
+
+~/bin/firedrake/src/ufl/ufl/formoperators.py in derivative(form, coefficient, argument, coefficient_derivatives)
+    277 
+    278     coefficients, arguments = _handle_derivative_arguments(form, coefficient,
+--> 279                                                            argument)
+    280 
+    281     if coefficient_derivatives is None:
+
+~/bin/firedrake/src/ufl/ufl/formoperators.py in _handle_derivative_arguments(form, coefficient, argument)
+    226         else:
+    227             if not isinstance(c, Indexed):
+--> 228                 error("Invalid coefficient type for %s" % ufl_err_str(c))
+    229             f, i = c.ufl_operands
+    230             if not isinstance(f, Coefficient):
+
+~/bin/firedrake/src/ufl/ufl/log.py in error(self, *message)
+    170         "Write error message and raise an exception."
+    171         self._log.error(*message)
+--> 172         raise self._exception_type(self._format_raw(*message))
+    173 
+    174     def begin(self, *message):
+
+UFLException: Invalid coefficient type for <SpatialCoordinate id=140659505241448>
+
+In [27]: after = apply_geometry_lowering(apply_integral_scaling(Out[11]))
+---------------------------------------------------------------------------
+KeyError                                  Traceback (most recent call last)
+<ipython-input-27-473bf83d6914> in <module>()
+----> 1 after = apply_geometry_lowering(apply_integral_scaling(Out[11]))
+
+KeyError: 11
+
+In [28]: after = apply_geometry_lowering(apply_integral_scaling(Out[10]))
+
+In [29]: print(after)
+{ weight * |((reference_grad(x))[0, 0] * (reference_grad(x))[1, 1] + -1 * (reference_grad(x))[0, 1] * (reference_grad(x))[1, 0])| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [30]: foo = ufl.replace(after,{SpatialCoordinate(mesh): mesh.coordinates})
+
+In [31]: print(foo)
+{ weight * |((reference_grad(w_4))[0, 0] * (reference_grad(w_4))[1, 1] + -1 * (reference_grad(w_4))[0, 1] * (reference_grad(w_4))[1, 0])| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [32]: ufl.derivative(foo, mesh.coordinates)
+Out[32]: Form([Integral(CoefficientDerivative(Product(Product(QuadratureWeight(Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), Abs(Sum(Product(Indexed(ReferenceGrad(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 4)), MultiIndex((FixedIndex(0), FixedIndex(0)))), Indexed(ReferenceGrad(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 4)), MultiIndex((FixedIndex(1), FixedIndex(1))))), Product(IntValue(-1), Product(Indexed(ReferenceGrad(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 4)), MultiIndex((FixedIndex(0), FixedIndex(1)))), Indexed(ReferenceGrad(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 4)), MultiIndex((FixedIndex(1), FixedIndex(0))))))))), ReferenceValue(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, FiniteElement('Lagrange', triangle, 1), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 2))), ExprList(*(Coefficient(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 4),)), ExprList(*(Argument(WithGeometry(FunctionSpace(<firedrake.mesh.MeshTopology object at 0x7fee1010db38>, VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), name=None), Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1)), 0, None),)), ExprMapping(*())), 'cell', Mesh(VectorElement(FiniteElement('Lagrange', triangle, 1), dim=2), 1), 'everywhere', {}, None)])
+
+In [33]: apply_derivatives(ufl.derivative(foo, mesh.coordinates))
+UFL:ERROR Coefficient should be wrapped in ReferenceValue by now
+ERROR:UFL:Coefficient should be wrapped in ReferenceValue by now
+---------------------------------------------------------------------------
+UFLException                              Traceback (most recent call last)
+<ipython-input-33-854bd1b178b9> in <module>()
+----> 1 apply_derivatives(ufl.derivative(foo, mesh.coordinates))
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in apply_derivatives(expression)
+   1072 def apply_derivatives(expression):
+   1073     rules = DerivativeRuleDispatcher()
+-> 1074     return map_integrand_dags(rules, expression)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrand_dags(function, form, only_integral_type, compress)
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+     57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+---> 58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <listcomp>(.0)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     44         itg = form
+     45         if (only_integral_type is None) or (itg.integral_type() in only_integral_type):
+---> 46             return itg.reconstruct(function(itg.integrand()))
+     47         else:
+     48             return itg
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <lambda>(expr)
+     55 
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+---> 57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+     58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+---> 86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+     87 
+     88             # Optionally check if r is in rcache, a memory optimization
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in reference_grad(self, o, f)
+   1029     def reference_grad(self, o, f):
+   1030         rules = ReferenceGradRuleset(o.ufl_shape[-1])  # FIXME: Look over this and test better.
+-> 1031         return map_expr_dag(rules, f)
+   1032 
+   1033     def variable_derivative(self, o, f, dummy_v):
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     82             # Cache miss: Get transformed operands, then apply transformation
+     83             if cutoff_types[v._ufl_typecode_]:
+---> 84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+     86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in coefficient(self, o)
+    621 
+    622     def coefficient(self, o):
+--> 623         error("Coefficient should be wrapped in ReferenceValue by now")
+    624 
+    625     def argument(self, o):
+
+~/bin/firedrake/src/ufl/ufl/log.py in error(self, *message)
+    170         "Write error message and raise an exception."
+    171         self._log.error(*message)
+--> 172         raise self._exception_type(self._format_raw(*message))
+    173 
+    174     def begin(self, *message):
+
+UFLException: Coefficient should be wrapped in ReferenceValue by now
+
+In [34]: foo = ufl.replace(after,{mesh.coordinates: ufl.classes.ReferenceValue(mesh.coordinates)})
+
+In [35]: print(foo)
+{ weight * |((reference_grad(x))[0, 0] * (reference_grad(x))[1, 1] + -1 * (reference_grad(x))[0, 1] * (reference_grad(x))[1, 0])| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [36]: foo = ufl.replace(foo,{mesh.coordinates: ufl.classes.ReferenceValue(mesh.coordinates)})
+
+In [37]: print(foo)
+{ weight * |((reference_grad(x))[0, 0] * (reference_grad(x))[1, 1] + -1 * (reference_grad(x))[0, 1] * (reference_grad(x))[1, 0])| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [38]: foo = ufl.replace(after,{SpatialCoordinate(mesh): ufl.classes.ReferenceValue(mesh.coordinates)})
+
+In [39]: print(foo)
+{ weight * |((reference_grad(reference_value(w_4)))[0, 0] * (reference_grad(reference_value(w_4)))[1, 1] + -1 * (reference_grad(reference_value(w_4)))[0, 1] * (reference_grad(reference_value(w_4)))[1, 0])| * (reference_value(w_2)) } * dx(<Mesh #1>[everywhere], {})
+
+In [40]: 
+
+In [40]: bar = apply_derivatives(ufl.derivative(foo, mesh.coordinates))
+UFL:ERROR Currently no support for ReferenceGrad in CoefficientDerivative.
+ERROR:UFL:Currently no support for ReferenceGrad in CoefficientDerivative.
+---------------------------------------------------------------------------
+UFLException                              Traceback (most recent call last)
+<ipython-input-40-47ef7b0f311f> in <module>()
+----> 1 bar = apply_derivatives(ufl.derivative(foo, mesh.coordinates))
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in apply_derivatives(expression)
+   1072 def apply_derivatives(expression):
+   1073     rules = DerivativeRuleDispatcher()
+-> 1074     return map_integrand_dags(rules, expression)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrand_dags(function, form, only_integral_type, compress)
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+     57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+---> 58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <listcomp>(.0)
+     37     if isinstance(form, Form):
+     38         mapped_integrals = [map_integrands(function, itg, only_integral_type)
+---> 39                             for itg in form.integrals()]
+     40         nonzero_integrals = [itg for itg in mapped_integrals
+     41                              if not isinstance(itg.integrand(), Zero)]
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in map_integrands(function, form, only_integral_type)
+     44         itg = form
+     45         if (only_integral_type is None) or (itg.integral_type() in only_integral_type):
+---> 46             return itg.reconstruct(function(itg.integrand()))
+     47         else:
+     48             return itg
+
+~/bin/firedrake/src/ufl/ufl/algorithms/map_integrands.py in <lambda>(expr)
+     55 
+     56 def map_integrand_dags(function, form, only_integral_type=None, compress=True):
+---> 57     return map_integrands(lambda expr: map_expr_dag(function, expr, compress),
+     58                           form, only_integral_type)
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+---> 86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+     87 
+     88             # Optionally check if r is in rcache, a memory optimization
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in coefficient_derivative(self, o, f, dummy_w, dummy_v, dummy_cd)
+   1038         dummy, w, v, cd = o.ufl_operands
+   1039         rules = GateauxDerivativeRuleset(w, v, cd)
+-> 1040         return map_expr_dag(rules, f)
+   1041 
+   1042     def indexed(self, o, Ap, ii):  # TODO: (Partially) duplicated in generic rules
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dag(function, expression, compress)
+     35     Return the result of the final function call.
+     36     """
+---> 37     result, = map_expr_dags(function, [expression], compress=compress)
+     38     return result
+     39 
+
+~/bin/firedrake/src/ufl/ufl/corealg/map_dag.py in map_expr_dags(function, expressions, compress)
+     82             # Cache miss: Get transformed operands, then apply transformation
+     83             if cutoff_types[v._ufl_typecode_]:
+---> 84                 r = handlers[v._ufl_typecode_](v)
+     85             else:
+     86                 r = handlers[v._ufl_typecode_](v, *[vcache[u] for u in v.ufl_operands])
+
+~/bin/firedrake/src/ufl/ufl/algorithms/apply_derivatives.py in reference_grad(self, o)
+    855 
+    856     def reference_grad(self, o):
+--> 857         error("Currently no support for ReferenceGrad in CoefficientDerivative.")
+    858         # TODO: This is implementable for regular derivative(M(f),f,v)
+    859         #       but too messy if customized coefficient derivative
+
+~/bin/firedrake/src/ufl/ufl/log.py in error(self, *message)
+    170         "Write error message and raise an exception."
+    171         self._log.error(*message)
+--> 172         raise self._exception_type(self._format_raw(*message))
+    173 
+    174     def begin(self, *message):
+
+UFLException: Currently no support for ReferenceGrad in CoefficientDerivative.
