@@ -6,23 +6,50 @@ mesh = UnitSquareMesh(3, 3)
 V = FunctionSpace(mesh, "CG", 1)
 
 u = Function(V)
+v = TestFunction(V)
 (x, y) = SpatialCoordinate(mesh)
 u.interpolate(x)
 
 w = TestFunction(mesh.coordinates.function_space())
 
-J = inner(grad(u), grad(u)) * dx
-# deriv = -2*inner(dot(grad(w), grad(u)), grad(u)) * dx + inner(grad(u), grad(u)) * div(w) * dx
-J =  (1e-10 * mesh.coordinates[0]+1) * u * u * dx
-deriv = derivative(J, u)
-print("apply_derivatives: ", ufl.algorithms.apply_derivatives.apply_derivatives(deriv))
-print("apply_functional_derivatives: ", ufl.algorithms.apply_derivatives.apply_functional_derivatives(deriv))
+def run_test(J, deriv, shape_deriv):
+    if deriv is not None:
+        computed = assemble(derivative(J, u)).vector().get_local()
+        actual = assemble(deriv).vector().get_local()
+        diff = np.linalg.norm(computed-actual)
+    else:
+        diff = None
 
-computed = assemble(deriv).vector().get_local()
-actual = assemble((1e-10 * mesh.coordinates[0]+1) * 2 * u*TestFunction(u.function_space()) * dx).vector().get_local()
-diff = np.linalg.norm(computed-actual)
-print(diff)
+    computed = assemble(derivative(J, mesh.coordinates)).vector().get_local()
+    actual = assemble(shape_deriv).vector().get_local()
+    shape_diff = np.linalg.norm(computed-actual)
+    print("Diff: ", diff)
+    print("Shape Diff: ", shape_diff)
+
+J = inner(grad(u), grad(u)) * dx
+deriv = 2 * inner(grad(u), grad(v)) * dx
+shape_deriv = -2*inner(dot(grad(w), grad(u)), grad(u)) * dx + inner(grad(u), grad(u)) * div(w) * dx
+run_test(J, deriv, shape_deriv)
+
+J = u * u * dx
+deriv = 2 * u * v * dx
+shape_deriv = u * u * div(w) * dx
+run_test(J, deriv, shape_deriv)
+
+f = x * y
+J = f * dx
+shape_deriv = div(f*w) * dx
+run_test(J, None, shape_deriv)
+
+J = sin(inner(u, u)) * dx
+deriv = cos(inner(u, u)) * 2 * u * v * dx
+shape_deriv = sin(inner(u, u)) * div(w) * dx
+
+
+run_test(J, deriv, shape_deriv)
+
 import sys; sys.exit(0)
+
 assemble(derivative(J, mesh.coordinates, ufl.classes.ReferenceValue(w)))
 # J = u * dx
 # deriv = div(w) * u * dx
